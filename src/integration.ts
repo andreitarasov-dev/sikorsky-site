@@ -20,15 +20,35 @@ export interface ThemeIntegrationOptions {
  *
  * This integration:
  * 1. Provides a virtual module `virtual:theme-config` that components can import
- * 2. Copies Inter fonts to the public folder during build
+ * 2. Copies Inter fonts to the public folder automatically (dev and build)
  */
 export function themeIntegration(options: ThemeIntegrationOptions = {}): AstroIntegration {
   const config = options.config ?? defaultConfig;
 
+  // Helper function to copy fonts
+  const copyFonts = (logger?: { info: (msg: string) => void; warn: (msg: string) => void }) => {
+    const packageDir = dirname(fileURLToPath(import.meta.url));
+    const fontsSource = join(packageDir, "fonts", "Inter");
+    const publicFontsDir = join(process.cwd(), "public", "fonts", "Inter");
+
+    if (existsSync(fontsSource)) {
+      try {
+        mkdirSync(publicFontsDir, { recursive: true });
+        cpSync(fontsSource, publicFontsDir, { recursive: true });
+        logger?.info("Copied Inter fonts to public/fonts/Inter");
+      } catch (error) {
+        logger?.warn(`Could not copy fonts: ${error}`);
+      }
+    }
+  };
+
   return {
     name: "@sikorsky/astro-theme",
     hooks: {
-      "astro:config:setup": ({ updateConfig }) => {
+      "astro:config:setup": ({ updateConfig, logger }) => {
+        // Copy fonts during dev mode
+        copyFonts(logger);
+
         updateConfig({
           vite: {
             plugins: [
@@ -51,22 +71,8 @@ export function themeIntegration(options: ThemeIntegrationOptions = {}): AstroIn
       },
 
       "astro:build:start": ({ logger }) => {
-        // Copy fonts to public folder during build
-        const packageDir = dirname(fileURLToPath(import.meta.url));
-        const fontsSource = join(packageDir, "fonts", "Inter");
-
-        // This will be the consumer's public folder
-        const publicFontsDir = join(process.cwd(), "public", "fonts", "Inter");
-
-        if (existsSync(fontsSource)) {
-          try {
-            mkdirSync(publicFontsDir, { recursive: true });
-            cpSync(fontsSource, publicFontsDir, { recursive: true });
-            logger.info("Copied Inter fonts to public/fonts/Inter");
-          } catch (error) {
-            logger.warn(`Could not copy fonts: ${error}`);
-          }
-        }
+        // Copy fonts during build
+        copyFonts(logger);
       }
     }
   };

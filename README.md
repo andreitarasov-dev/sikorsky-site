@@ -1,21 +1,11 @@
 # @sikorsky/site
 
-A reusable Astro theme package with components, styles, and a Firebase-powered like system.
+A reusable Astro theme package with components, styles, and other features.
 
 ## Installation
 
 ```bash
 npm install @sikorsky/site
-```
-
-Or for local development:
-
-```bash
-# In the package directory
-npm link
-
-# In your Astro project
-npm link @sikorsky/site
 ```
 
 ## Setup
@@ -33,6 +23,7 @@ export default defineConfig({
     domain: "your-site.com"
   },
   logo: "/logo.png",
+  logoAlt: "Your Name logo", // Optional, defaults to "{site.name} logo"
   footer: {
     copyright: "© Your Name, b. 1990",
     decoration: "·㉨·", // Optional decorative element
@@ -55,9 +46,16 @@ import { themeIntegration } from "@sikorsky/site";
 import themeConfig from "./theme.config";
 
 export default defineConfig({
-  integrations: [themeIntegration({ config: themeConfig })]
+  integrations: [themeIntegration({ config: themeConfig })],
+  vite: {
+    ssr: {
+      noExternal: ["firebase"]
+    }
+  }
 });
 ```
+
+**Note:** The `vite.ssr.noExternal` configuration is required for Firebase to work properly in SSR mode. This ensures Firebase is bundled during server-side rendering rather than being treated as an external dependency.
 
 ### 3. Set up Firebase (for the like system)
 
@@ -73,13 +71,7 @@ PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
 PUBLIC_FIREBASE_APP_ID=1:123456789:web:abc123
 ```
 
-### 4. Copy fonts to your public folder
-
-The integration will attempt to copy fonts during build, but you may need to manually copy them:
-
-```bash
-cp -r node_modules/@sikorsky/site/src/fonts/Inter public/fonts/
-```
+**Note:** The integration automatically copies Inter fonts to your `public/fonts/Inter` folder during both development and build. No manual setup is required.
 
 ## Usage
 
@@ -87,7 +79,7 @@ cp -r node_modules/@sikorsky/site/src/fonts/Inter public/fonts/
 
 ```astro
 ---
-import { Layout } from "@sikorsky/site";
+import Layout from "@sikorsky/site/components/Layout.astro";
 ---
 
 <Layout title="My Page" description="Page description" pageId="my-page">
@@ -98,6 +90,178 @@ import { Layout } from "@sikorsky/site";
 
 The `pageId` prop enables the like button for that page.
 
+## Use Cases
+
+### Basic Page
+
+A simple page with title and content:
+
+```astro
+---
+import Layout from "@sikorsky/site/components/Layout.astro";
+---
+
+<Layout title="About me" description="Learn more about me">
+  <header>
+    <h1 id="title">About me</h1>
+    <h2>Brief introduction or subtitle</h2>
+  </header>
+  <section>
+    <p>Your content here...</p>
+  </section>
+</Layout>
+```
+
+### Homepage with Multiple Sections
+
+A homepage with various content sections:
+
+```astro
+---
+import Layout from "@sikorsky/site/components/Layout.astro";
+---
+
+<Layout title="Your Name" description="Your description">
+  <div class="index-page">
+    <header>
+      <h1 id="title">Your Name</h1>
+      <h2>Your tagline or introduction</h2>
+    </header>
+    
+    <section id="experience">
+      <h3>Professional Experience</h3>
+      <ul>
+        <li>
+          <div>
+            <strong>Role, <span class="secondary">Company, Year</span></strong>
+          </div>
+        </li>
+      </ul>
+    </section>
+    
+    <section id="projects">
+      <h3>My Projects</h3>
+      <ul>
+        <li>
+          <div class="link-caption-wrapper">
+            <div class="link-block">
+              <a href="/project" class="link">Project Name</a>
+            </div>
+            <div class="caption" tabindex="0">Project description</div>
+          </div>
+        </li>
+      </ul>
+    </section>
+  </div>
+</Layout>
+```
+
+### Case Study Page with Metadata and Images
+
+A detailed case study page with metadata, images, and like button:
+
+```astro
+---
+import { Image } from "astro:assets";
+import Layout from "@sikorsky/site/components/Layout.astro";
+import projectImage from "../images/project.png";
+import companyLogo from "../images/logo.png";
+---
+
+<Layout 
+  title="Project Title" 
+  description="Brief project description"
+  pageId="project-slug"
+>
+  <div class="metadata">
+    <div><img src={companyLogo.src} alt="Company" width={32} height={32} /></div>
+    <div>
+      <a href="https://company.com" target="_blank" class="link">Company Name</a>
+      ·
+      <time datetime="2024-01-01">Jan 2024 – Mar 2024</time>
+      · <span class="tags">Category, Tag</span>
+    </div>
+  </div>
+  
+  <header>
+    <h1 id="title">Project Title</h1>
+    <h2>Project subtitle or brief description</h2>
+  </header>
+  
+  <section>
+    <ul class="list-with-secondary-items">
+      <li>
+        <span class="secondary">My role:</span> Product Designer
+      </li>
+      <li>
+        <span class="secondary">Deliverables:</span> UI/UX, Research
+      </li>
+      <li><span class="secondary">Platforms:</span> Web, Mobile</li>
+    </ul>
+  </section>
+  
+  <section>
+    <p>
+      <Image src={projectImage} alt="Project screenshot" class="image full" />
+      <span class="caption secondary">Image caption</span>
+    </p>
+  </section>
+  
+  <section>
+    <h2>Context</h2>
+    <p>Your content here...</p>
+  </section>
+</Layout>
+```
+
+### Content Page with Metadata
+
+A content page with update metadata:
+
+```astro
+---
+import Layout from "@sikorsky/site/components/Layout.astro";
+---
+
+<Layout title="What I'm up to" description="Current updates">
+  <div class="metadata">
+    <time datetime="2024-12-27">Updated December 27, 2024</time>
+  </div>
+  
+  <header>
+    <h1 id="title">What I'm up to</h1>
+  </header>
+  
+  <section>
+    <h2>Current Focus</h2>
+    <p>Your updates here...</p>
+  </section>
+</Layout>
+```
+
+### Page with Like Button
+
+Enable the like button by providing a `pageId`:
+
+```astro
+---
+import Layout from "@sikorsky/site/components/Layout.astro";
+---
+
+<Layout 
+  title="My Article" 
+  description="Article description"
+  pageId="my-article"
+>
+  <header>
+    <h1 id="title">My Article</h1>
+  </header>
+  <section>
+    <p>Article content...</p>
+  </section>
+</Layout>
+```
+
 ### Available Components
 
 - `Layout` - Main layout with nav, footer, and optional like button
@@ -105,10 +269,6 @@ The `pageId` prop enables the like button for that page.
 - `Breadcrumbs` - Breadcrumb navigation with scroll-based visibility
 - `LikeButton` - Firebase-powered like button with animations
 - `Card` - Link card component
-
-### Utilities
-
-- `generateBreadcrumbs(path, title)` - Generate breadcrumb items from a path
 
 ## TypeScript Support
 
