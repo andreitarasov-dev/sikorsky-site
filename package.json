@@ -1,6 +1,6 @@
 {
   "name": "@sikorsky/site",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A reusable Astro theme package with components, styles, and other features",
   "author": "Paul Sikorsky <p@sikorsky.design> & Andrei Tarasov <contact@andreitarasov.dev>",
   "license": "MIT",
