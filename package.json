@@ -1,0 +1,40 @@
+{
+  "name": "@sikorsky/site",
+  "version": "0.1.0",
+  "description": "A reusable Astro theme package with components, styles, and other features",
+  "author": "Paul Sikorsky <p@sikorsky.design> & Andrei Tarasov <contact@andreitarasov.dev>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andreitarasov-dev/sikorsky-site.git"
+  },
+  "homepage": "https://github.com/andreitarasov-dev/sikorsky-site.git",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./components/*": "./src/components/*",
+    "./styles": "./src/styles/global.css",
+    "./fonts": "./src/fonts/Inter/inter.css",
+    "./utils/*": "./src/utils/*",
+    "./lib/*": "./src/lib/*"
+  },
+  "files": [
+    "src"
+  ],
+  "keywords": [
+    "astro",
+    "theme",
+    "components"
+  ],
+  "peerDependencies": {
+    "astro": "^4.0.0 || ^5.0.0",
+    "firebase": "^11.0.0"
+  },
+  "devDependencies": {
+    "astro": "^4.16.1",
+    "firebase": "^11.0.1",
+    "typescript": "^5.4.5"
+  }
+}
