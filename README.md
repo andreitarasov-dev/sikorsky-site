@@ -71,7 +71,7 @@ PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
 PUBLIC_FIREBASE_APP_ID=1:123456789:web:abc123
 ```
 
-**Note:** The integration automatically copies Inter fonts to your `public/fonts/Inter` folder during both development and build. No manual setup is required.
+**Note:** The integration automatically serves Inter fonts from the package during development and includes them in the build output.
 
 ## Usage
 

@@ -1,6 +1,7 @@
 import type { AstroIntegration } from "astro";
-import { cpSync, existsSync, mkdirSync } from "node:fs";
-import { dirname, join } from "node:path";
+import type { Plugin } from "vite";
+import { cpSync, existsSync, mkdirSync, readFileSync } from "node:fs";
+import { dirname, join, extname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defaultConfig } from "./config.js";
 import type { ResolvedThemeConfig } from "./types.js";
@@ -20,35 +21,77 @@ export interface ThemeIntegrationOptions {
  *
  * This integration:
  * 1. Provides a virtual module `virtual:theme-config` that components can import
- * 2. Copies Inter fonts to the public folder automatically (dev and build)
+ * 2. Serves Inter fonts from the package during dev and copies them to dist during build
  */
 export function themeIntegration(options: ThemeIntegrationOptions = {}): AstroIntegration {
   const config = options.config ?? defaultConfig;
 
-  // Helper function to copy fonts
-  const copyFonts = (logger?: { info: (msg: string) => void; warn: (msg: string) => void }) => {
-    const packageDir = dirname(fileURLToPath(import.meta.url));
-    const fontsSource = join(packageDir, "fonts", "Inter");
-    const publicFontsDir = join(process.cwd(), "public", "fonts", "Inter");
+  // Get the package directory where fonts are located
+  const packageDir = dirname(fileURLToPath(import.meta.url));
+  const fontsSource = join(packageDir, "fonts", "Inter");
 
-    if (existsSync(fontsSource)) {
-      try {
-        mkdirSync(publicFontsDir, { recursive: true });
-        cpSync(fontsSource, publicFontsDir, { recursive: true });
-        logger?.info("Copied Inter fonts to public/fonts/Inter");
-      } catch (error) {
-        logger?.warn(`Could not copy fonts: ${error}`);
+  // Vite plugin to serve fonts from package
+  const fontsPlugin = (): Plugin => {
+    return {
+      name: "sikorsky-theme-fonts",
+      configureServer(server) {
+        // Serve fonts and CSS from node_modules during dev
+        server.middlewares.use("/fonts/Inter", (req, res, next) => {
+          if (!req.url) {
+            next();
+            return;
+          }
+
+          // Extract filename from URL (remove leading slash and /fonts/Inter prefix if present)
+          const filename = req.url.replace(/^\/fonts\/Inter\//, "").replace(/^\//, "");
+          const fontPath = join(fontsSource, filename);
+          
+          if (!existsSync(fontPath)) {
+            next();
+            return;
+          }
+
+          try {
+            const fontFile = readFileSync(fontPath);
+            const ext = extname(fontPath).toLowerCase();
+            
+            // Set appropriate content type
+            const contentType =
+              ext === ".woff2" ? "font/woff2" :
+              ext === ".woff" ? "font/woff" :
+              ext === ".ttf" ? "font/ttf" :
+              ext === ".otf" ? "font/otf" :
+              ext === ".css" ? "text/css" :
+              "application/octet-stream";
+
+            res.setHeader("Content-Type", contentType);
+            res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+            res.end(fontFile);
+          } catch (error) {
+            next();
+          }
+        });
+      },
+      generateBundle() {
+        // Copy fonts to dist during build
+        if (existsSync(fontsSource)) {
+          const distFontsDir = join(process.cwd(), "dist", "fonts", "Inter");
+          try {
+            mkdirSync(distFontsDir, { recursive: true });
+            cpSync(fontsSource, distFontsDir, { recursive: true });
+          } catch (error) {
+            // Error will be caught by build process
+            console.warn(`Could not copy fonts to dist: ${error}`);
+          }
+        }
       }
-    }
+    };
   };
 
   return {
     name: "@sikorsky/astro-theme",
     hooks: {
-      "astro:config:setup": ({ updateConfig, logger }) => {
-        // Copy fonts during dev mode
-        copyFonts(logger);
-
+      "astro:config:setup": ({ updateConfig }) => {
         updateConfig({
           vite: {
             plugins: [
@@ -64,15 +107,11 @@ export function themeIntegration(options: ThemeIntegrationOptions = {}): AstroIn
                     return `export default ${JSON.stringify(config)};`;
                   }
                 }
-              }
+              },
+              fontsPlugin()
             ]
           }
         });
-      },
-
-      "astro:build:start": ({ logger }) => {
-        // Copy fonts during build
-        copyFonts(logger);
       }
     }
   };
