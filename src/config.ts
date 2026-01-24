@@ -7,7 +7,8 @@ import type { ResolvedThemeConfig, ThemeConfig } from "./types.js";
 export function defineConfig(config: ThemeConfig): ResolvedThemeConfig {
   return {
     ...config,
-    logoAlt: config.logoAlt ?? `${config.site.name} logo`
+    logoAlt: config.logoAlt ?? `${config.site.name} logo`,
+    head: config.head ?? []
   };
 }
 
@@ -23,5 +24,6 @@ export const defaultConfig: ResolvedThemeConfig = {
     copyright: "© My Site",
     email: "hello@example.com",
     socials: []
-  }
+  },
+  head: []
 };

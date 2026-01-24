@@ -16,6 +16,15 @@ export interface FooterConfig {
   socials: SocialLink[];
 }
 
+export interface HeadTag {
+  /** HTML tag name (e.g. "script", "link", "meta") */
+  tag: string;
+  /** Tag attributes as key-value pairs */
+  attrs?: Record<string, string | number | boolean>;
+  /** Optional inner content for tags like script or style */
+  content?: string;
+}
+
 export interface FirebaseConfig {
   apiKey: string;
   authDomain: string;
@@ -44,8 +53,14 @@ export interface ThemeConfig {
    * If not provided, will use PUBLIC_FIREBASE_* environment variables.
    */
   firebase?: Partial<FirebaseConfig>;
+  /**
+   * Custom head tags to inject into the document head.
+   * Useful for adding analytics scripts, custom meta tags, etc.
+   */
+  head?: HeadTag[];
 }
 
 export interface ResolvedThemeConfig extends ThemeConfig {
   logoAlt: string;
+  head: HeadTag[];
 }

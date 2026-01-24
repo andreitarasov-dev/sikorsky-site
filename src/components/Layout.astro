@@ -3,6 +3,7 @@ import "../styles/global.css";
 import Nav from "./Nav.astro";
 import LikeButton from "./LikeButton.astro";
 import config from "virtual:theme-config";
+import { HeadTag, SocialLink } from "../types";
 
 interface Props {
   title: string;
@@ -12,7 +13,7 @@ interface Props {
 
 const { title, description, pageId } = Astro.props;
 const currentPath = Astro.url.pathname;
-const { footer, site } = config;
+const { footer, site, head } = config;
 ---
 
 <!doctype html>
@@ -35,6 +36,19 @@ const { footer, site } = config;
     <link rel="stylesheet" href="/fonts/Inter/inter.css" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    {head && head.map((item: HeadTag) => {
+      // Validate tag name to prevent potential issues
+      const allowedTags = ['script', 'link', 'meta', 'style', 'base', 'noscript'];
+      if (!allowedTags.includes(item.tag.toLowerCase())) {
+        console.warn(`[Layout] Skipping unsupported head tag: ${item.tag}. Allowed tags: ${allowedTags.join(', ')}`);
+        return null;
+      }
+      
+      const Tag = item.tag;
+      return (
+        <Tag {...item.attrs} set:html={item.content} />
+      );
+    })}
   </head>
   <body>
     <Nav title={title} />
@@ -68,7 +82,7 @@ const { footer, site } = config;
         {footer.decoration && <span style="margin-left: 6px; letter-spacing: 5px" set:html={footer.decoration} />}
         <span>
           <a href={`mailto:${footer.email}`} class="link">{footer.email}</a>
-          {footer.socials.map((social) => (
+          {footer.socials.map((social: SocialLink) => (
             <>
               {" · "}
               <a

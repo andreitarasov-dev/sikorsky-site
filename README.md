@@ -33,7 +33,17 @@ export default defineConfig({
       { label: "LinkedIn", url: "https://linkedin.com/in/you" },
       { label: "Instagram", url: "https://instagram.com/you" }
     ]
-  }
+  },
+  head: [ // Optional custom head tags
+    {
+      tag: "script",
+      attrs: {
+        defer: true,
+        src: "https://stats.domain.site/script.js",
+        "data-website-id": "xxx-xxx-xxx-xxx"
+      }
+    }
+  ]
 });
 ```
 
@@ -269,6 +279,88 @@ import Layout from "@sikorsky/site/components/Layout.astro";
 - `Breadcrumbs` - Breadcrumb navigation with scroll-based visibility
 - `LikeButton` - Firebase-powered like button with animations
 - `Card` - Link card component
+
+## Custom Head Tags
+
+You can inject custom tags into the document `<head>` section via the `head` configuration option. This is useful for adding analytics scripts, custom meta tags, or other third-party integrations.
+
+### Adding Analytics Scripts
+
+```typescript
+export default defineConfig({
+  // ... other config
+    head: [ // Optional custom head tags
+        {
+            tag: "script",
+            attrs: {
+                defer: true,
+                src: "https://stats.domain.site/script.js",
+                "data-website-id": "xxx-xxx-xxx-xxx"
+            }
+        }
+    ]
+});
+```
+
+### Adding Custom Meta Tags
+
+```typescript
+export default defineConfig({
+  // ... other config
+  head: [
+    {
+      tag: "meta",
+      attrs: {
+        property: "og:type",
+        content: "website"
+      }
+    },
+    {
+      tag: "meta",
+      attrs: {
+        name: "twitter:card",
+        content: "summary_large_image"
+      }
+    }
+  ]
+});
+```
+
+### Adding Inline Scripts or Styles
+
+```typescript
+export default defineConfig({
+  // ... other config
+  head: [
+    {
+      tag: "script",
+      content: "console.log('Custom inline script');"
+    },
+    {
+      tag: "style",
+      content: ".custom-class { color: red; }"
+    }
+  ]
+});
+```
+
+### HeadTag Interface
+
+Each head tag object supports the following properties:
+
+- `tag` (required): HTML tag name. Allowed values: `script`, `link`, `meta`, `style`, `base`, `noscript`
+- `attrs` (optional): Object with tag attributes as key-value pairs. Supports strings, numbers, and booleans.
+- `content` (optional): Inner HTML content for tags like `<script>` or `<style>`
+
+### Security Notes
+
+⚠️ **Important Security Considerations:**
+
+- The `head` configuration is processed at **build time**, not runtime
+- Only add tags from **trusted sources** (your own analytics, verified third-party scripts)
+- The `content` field uses raw HTML injection - only use with content you control
+- Allowed tags are restricted to common head elements for safety
+- Never expose this configuration to user input or external APIs
 
 ## TypeScript Support
 
