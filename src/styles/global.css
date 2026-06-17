@@ -394,6 +394,18 @@ ol > li {
   }
 }
 
+/* When a numbered item has its own heading, treat each step like a section
+   and give it generous paragraph spacing instead of tight list spacing. */
+ol > li:has(> h3):not(:first-child) {
+  margin-top: 64.5px;
+}
+
+@media (max-width: 600px) {
+  ol > li:has(> h3):not(:first-child) {
+    margin-top: var(--spacing-xxlarge);
+  }
+}
+
 ol > li:before {
   content: counter(level1) " ";
   counter-increment: level1;
