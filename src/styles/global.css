@@ -98,6 +98,30 @@ body {
   background-color: var(--base);
   color: var(--constant_black);
   overflow-x: hidden;
+
+  /* Hold the footer at the bottom of the viewport on pages too short to fill
+     it. `main` absorbs the leftover space, so the footer keeps its own 160px
+     top margin instead of having it collapsed — a short page and a long one
+     get the same gap above the footer. `nav.header` is position:fixed and so
+     is not a flex item. */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+main {
+  flex: 1 0 auto;
+}
+
+footer {
+  flex-shrink: 0;
+  /* The footer's own `margin: … auto …` centres it. As a flex item, auto
+     cross-axis margins take priority over stretching, which would shrink the
+     footer to fit-content and centre its text. `width: 100%` keeps it the same
+     893px-capped box it is in normal flow, so it stays left-aligned with
+     .content. */
+  width: 100%;
 }
 
 @media (max-width: 600px) {
