@@ -430,14 +430,14 @@ To deliberately update snapshots, first install the candidate tarball and build 
 images. The standard validation command never updates baselines.
 
 CI pins both real consumer revisions in `.github/workflows/check.yml`. Update those
-SHAs in a reviewed PR when the websites change substantially. Validation records the
+SHAs in a tested commit when the websites change substantially. Validation records the
 exact revisions, so package release evidence remains reproducible.
 
 ### Release deliberately
 
 1. Update the version with `npm version patch --no-git-tag-version`, add a matching
    `## <version>` entry to `CHANGELOG.md`, and commit both package files and the notes.
-2. Merge the reviewed theme changes into `master` after checks pass.
+2. Commit the tested theme changes to `master` and push after checks pass.
 3. Run **Release theme** on `master`, enter the committed version, and leave **publish**
    unchecked for a dry run.
 4. After reviewing that run, run it again with **publish** checked. It revalidates,
@@ -454,6 +454,21 @@ GitHub environment and restrict deployment branches to `master`; optional review
 can provide another release gate. This configuration is not created by committing YAML.
 No npm write token is required. See [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/).
 
-Each website's Dependabot configuration opens theme-update PRs on its daily schedule.
-They are reviewed and merged independently; hosting previews depend on each host's
-settings. To roll back, revert the consumer's dependency-update commit and redeploy.
+### Upgrade both websites without PRs
+
+```sh
+npm run upgrade:sites -- --version 0.5.4
+```
+
+Supply an exact published version. Optional `--andrei` and `--pavel` paths work as
+with the other commands. Both sites must have clean `main` checkouts. The command
+installs the exact version, runs production builds and full browser suites sequentially,
+and commits only `package.json` and `package-lock.json` after both sites pass.
+It never rewrites snapshots or pushes. Review both commits, then push each `main`
+branch to deploy. If validation fails, no dependency commits are made; inspect the
+retained changes. Restore the two dependency files and run `npm ci` in each site
+before retrying from clean checkouts. A git commit failure can leave the first site
+committed; the command reports which commits succeeded. Nothing is reset automatically.
+
+To roll back a deployed update, revert that site's dependency commit, rerun its build
+and tests, and push the revert. The other website can stay on its existing version.

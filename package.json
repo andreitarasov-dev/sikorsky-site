@@ -45,6 +45,7 @@
     "test": "node --test tests/*.test.mjs",
     "dev:sites": "node scripts/dev-sites.mjs",
     "check:consumers": "node scripts/check-consumers.mjs",
-    "test:fixture": "playwright test"
+    "test:fixture": "playwright test",
+    "upgrade:sites": "node scripts/upgrade-sites.mjs"
   }
 }

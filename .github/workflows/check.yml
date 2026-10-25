@@ -18,13 +18,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: andreitarasov-dev/andreitarasov.dev
-          ref: 01526cdf9984a64a8a704a11af66a65257bc8a72
+          ref: 2a4cff2ef4f9d1db559dc512b477e937b0def151
           path: andreitarasov.dev
           persist-credentials: false
       - uses: actions/checkout@v4
         with:
           repository: ingmaesing/sikorsky.design
-          ref: 751d829e39454d2da40845c8dd39f3ef2b65f181
+          ref: 462488faeb30748e7e4ceb0ad4d564f924b3890d
           path: sikorsky.design
           persist-credentials: false
       - uses: actions/setup-node@v4
