@@ -1,0 +1,51 @@
+name: Release theme
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Committed package version (for example 0.5.4)
+        type: string
+        required: true
+      publish:
+        description: Publish to npm after validation (leave unchecked for a dry run)
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: theme-release
+  cancel-in-progress: false
+jobs:
+  validate:
+    uses: ./.github/workflows/check.yml
+  publish:
+    needs: validate
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-24.04
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Install npm with trusted-publishing support
+        run: npm install --global npm@11.15.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: validated-package
+          path: release-artifact
+      - name: Verify the version, source revision, and tarball digest
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: node scripts/release.mjs "$RELEASE_VERSION" release-artifact
+      - name: Dry-run publication
+        if: ${{ !inputs.publish }}
+        run: npm publish release-artifact/*.tgz --access public --dry-run
+      - name: Publish the validated tarball
+        if: inputs.publish
+        run: npm publish release-artifact/*.tgz --access public --provenance

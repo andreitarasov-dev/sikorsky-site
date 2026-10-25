@@ -1,0 +1,10 @@
+---
+import Layout from '@sikorsky/site/components/Layout.astro';
+---
+<Layout title="Long article" description="Typography and optional likes" pageId="fixture-article">
+  <h1 id="title">Long article</h1>
+  <h2>Typography and lists</h2>
+  <p><strong>Strong text</strong>, <em>emphasis</em>, and <a href="/" class="link">a home link</a>.</p>
+  <ol><li>First item<ul><li>Nested item</li></ul></li><li>Second item</li></ol>
+  {Array.from({ length: 12 }, (_, i) => <section><h2>Section {i + 1}</h2><p>A stable paragraph for checking the shared content column, spacing, and line wrapping across desktop and mobile viewports.</p></section>)}
+</Layout>

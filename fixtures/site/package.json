@@ -1,0 +1,13 @@
+{
+  "name": "theme-fixture",
+  "private": true,
+  "type": "module",
+  "scripts": { "build": "astro check && astro build", "preview": "astro preview" },
+  "dependencies": {
+    "@astrojs/check": "^0.7.0",
+    "@sikorsky/site": "0.5.3",
+    "astro": "4.16.1",
+    "firebase": "^11.0.1",
+    "typescript": "^5.4.5"
+  }
+}

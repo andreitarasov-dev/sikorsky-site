@@ -1,5 +1,4 @@
-declare module "virtual:theme-config" {
-  import type { ResolvedThemeConfig } from "@sikorsky/astro-theme";
-  const config: ResolvedThemeConfig;
+declare module 'virtual:theme-config' {
+  const config: import('./types.js').ResolvedThemeConfig;
   export default config;
 }

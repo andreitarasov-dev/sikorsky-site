@@ -367,9 +367,93 @@ Each head tag object supports the following properties:
 Add the virtual module types to your `src/env.d.ts`:
 
 ```typescript
-/// <reference types="@sikorsky/site/src/virtual" />
+/// <reference types="@sikorsky/site/virtual" />
 ```
 
 ## License
 
 MIT
+
+## Maintainer workflow
+
+Andrei maintains the theme. Both consumer repositories keep their own content,
+lockfiles, and deployment schedule. Use Node 22 (`nvm install && nvm use`) and run
+`npm ci` in this repository and both websites before starting local preview.
+
+### Edit and preview both websites
+
+With all three checkouts in the same parent directory:
+
+```sh
+npm run dev:sites
+```
+
+Andrei: http://127.0.0.1:4321 — Pavel: http://127.0.0.1:4322.
+For other locations:
+
+```sh
+npm run dev:sites -- --andrei /path/to/andreitarasov.dev --pavel /path/to/sikorsky.design
+```
+
+Both sites need the local-theme development configuration introduced alongside this
+workflow. Shared CSS and components reload live. Restart after changing integration
+or theme configuration. The consumer resolves the local integration with Vite and
+uses an ignored `.astro/local-theme` cache link for Astro 4 component paths. Neither
+consumer's dependencies nor lockfile is rewritten. Ctrl-C stops both server process
+groups. Missing checkouts, missing dependencies, and occupied ports fail early.
+Do not export `SIKORSKY_THEME_DIR` globally; production builds reject the override.
+
+### Validate what npm will ship
+
+```sh
+npm test
+npx playwright install chromium
+npm run check:consumers
+```
+
+The same path flags work for validation. This packs the theme, installs the actual
+tarball in disposable copies of both websites and the fixture, builds production
+output, and runs browser checks. It strips Firebase environment variables and does
+not copy `.env` files. Fixture likes use a local adapter, never a real database.
+Do not put credentials in source files.
+
+Artifacts are retained under `.artifacts/sikorsky-check-*/`: the exact tarball, logs,
+and `validation.json` with source revisions, dirty-state flags, and a SHA-256 digest.
+Use `--artifact-dir /path/to/evidence` for a chosen location. Successful temporary
+consumer copies are removed; failed copies remain at the path printed in the error.
+Remove that printed temporary directory after investigating.
+
+The fixture's screenshot baseline uses macOS and Playwright 1.62.1. CI uses macos-14.
+Linux runs need their own reviewed baselines; do not overwrite macOS references.
+To deliberately update snapshots, first install the candidate tarball and build in
+`fixtures/site`, then run `npm run test:fixture -- --update-snapshots` and inspect the
+images. The standard validation command never updates baselines.
+
+CI pins both real consumer revisions in `.github/workflows/check.yml`. Update those
+SHAs in a reviewed PR when the websites change substantially. Validation records the
+exact revisions, so package release evidence remains reproducible.
+
+### Release deliberately
+
+1. Update the version with `npm version patch --no-git-tag-version`, add a matching
+   `## <version>` entry to `CHANGELOG.md`, and commit both package files and the notes.
+2. Merge the reviewed theme changes into `master` after checks pass.
+3. Run **Release theme** on `master`, enter the committed version, and leave **publish**
+   unchecked for a dry run.
+4. After reviewing that run, run it again with **publish** checked. It revalidates,
+   verifies the version, commit and tarball digest, and publishes that exact artifact.
+
+No push or PR publishes automatically. Release jobs are serialized. Already-published
+versions fail verification, and an npm/network error fails closed. If publication
+succeeds but a later action fails, check npm before retrying; choose a new patch version
+for corrections rather than replacing a published version.
+
+One-time account setup: the npm owner must configure a trusted GitHub publisher for
+`andreitarasov-dev/sikorsky-site`, workflow `release.yml`, environment `npm`. Create that
+GitHub environment and restrict deployment branches to `master`; optional reviewers
+can provide another release gate. This configuration is not created by committing YAML.
+No npm write token is required. See [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/).
+
+Each website's Dependabot configuration opens theme-update PRs on its daily schedule.
+They are reviewed and merged independently; hosting previews depend on each host's
+settings. To roll back, revert the consumer's dependency-update commit and redeploy.

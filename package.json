@@ -1,6 +1,6 @@
 {
   "name": "@sikorsky/site",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "A reusable Astro theme package with components, styles, and other features",
   "author": "Paul Sikorsky <p@sikorsky.design> & Andrei Tarasov <contact@andreitarasov.dev>",
   "license": "MIT",
@@ -18,7 +18,9 @@
     "./styles": "./src/styles/global.css",
     "./fonts": "./src/fonts/Inter/inter.css",
     "./utils/*": "./src/utils/*",
-    "./lib/*": "./src/lib/*"
+    "./lib/*": "./src/lib/*",
+    "./virtual": "./src/virtual.d.ts",
+    "./src/virtual": "./src/virtual.d.ts"
   },
   "files": [
     "src"
@@ -35,6 +37,14 @@
   "devDependencies": {
     "astro": "^4.16.1",
     "firebase": "^11.0.1",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "@playwright/test": "1.62.1",
+    "@astrojs/check": "^0.7.0"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "dev:sites": "node scripts/dev-sites.mjs",
+    "check:consumers": "node scripts/check-consumers.mjs",
+    "test:fixture": "playwright test"
   }
 }

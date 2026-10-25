@@ -271,6 +271,11 @@ import { database } from "../lib/firebase.js";
       this.hasLiked = this.checkIfLiked();
       this.isMobile = window.matchMedia("(max-width: 600px)").matches;
 
+      if (!database) {
+        this.button.disabled = true;
+        this.button.title = 'Likes are unavailable';
+        return;
+      }
       this.initializeLikes();
       this.attachEventListeners();
     }

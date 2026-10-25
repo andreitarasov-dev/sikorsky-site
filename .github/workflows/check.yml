@@ -1,0 +1,59 @@
+name: Validate theme
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: macos-14
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: theme
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: andreitarasov-dev/andreitarasov.dev
+          ref: 01526cdf9984a64a8a704a11af66a65257bc8a72
+          path: andreitarasov.dev
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: ingmaesing/sikorsky.design
+          ref: 751d829e39454d2da40845c8dd39f3ef2b65f181
+          path: sikorsky.design
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: theme/.nvmrc
+          cache: npm
+          cache-dependency-path: theme/package-lock.json
+      - name: Install theme tooling
+        working-directory: theme
+        run: npm ci
+      - name: Install browser
+        working-directory: theme
+        run: npx playwright install chromium
+      - name: Test orchestration
+        working-directory: theme
+        run: npm test
+      - name: Validate the release tarball against both consumers and fixture
+        working-directory: theme
+        run: npm run check:consumers -- --artifact-dir .artifacts/validated
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: validated-package
+          path: theme/.artifacts/validated/
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-diagnostics
+          path: |
+            theme/playwright-report/
+            theme/test-results/
