@@ -45,7 +45,7 @@ jobs:
         run: node scripts/release.mjs "$RELEASE_VERSION" release-artifact
       - name: Dry-run publication
         if: ${{ !inputs.publish }}
-        run: npm publish release-artifact/*.tgz --access public --dry-run
+        run: npm publish ./release-artifact/*.tgz --access public --dry-run
       - name: Publish the validated tarball
         if: inputs.publish
-        run: npm publish release-artifact/*.tgz --access public --provenance
+        run: npm publish ./release-artifact/*.tgz --access public --provenance
