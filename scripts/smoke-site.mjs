@@ -42,7 +42,12 @@ try {
       await page.locator('h1').waitFor();
       assert.ok(await page.locator('nav a[href="/"]').count() >= 1);
       await page.evaluate(() => document.fonts.ready);
-      assert.ok(await page.evaluate(() => document.fonts.check('16px Inter')));
+      // Explicitly load the variable face: the unused static Inter face need
+      // not be loaded on a fresh CI browser, even when the page renders correctly.
+      assert.ok(await page.evaluate(async () => {
+        const faces = await document.fonts.load('16px InterVariable');
+        return faces.length > 0 && faces.every(face => face.status === 'loaded');
+      }), 'The packaged variable font must load successfully');
       const font = await page.request.get(origin + '/fonts/Inter/InterVariable.woff2');
       assert.equal(font.status(), 200);
       assert.ok((await font.body()).byteLength > 1000);
